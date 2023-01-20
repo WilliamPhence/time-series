@@ -15,11 +15,6 @@ def monthly_counts(df):
     # set index equal to datetime provided by data
     df['Date'] = pd.to_datetime(df['Date'], utc=True)
         
-    # Create a column for year, month & day
-    df['year'] = df['Date'].dt.year
-    df['month'] = df['Date'].dt.month
-    df['day'] = df['Date'].dt.day
-
     print("\nSTARTING DATA FRAME:\n")
     print(df)
     print("\nFollowing dfs are proccessed\n")
@@ -27,18 +22,27 @@ def monthly_counts(df):
     # filter data
     damage_filt = df['Defect Category'] == 'damage'
     damage_df = df[damage_filt]
+    damage_df = pd.DataFrame(damage_df)
     print("DATA FRAME FILTEREED FOR ONLY DAMAGE DEFECTS\n")
     print(damage_df)
 
-    # reduced filtered df to only relevant columns
-    damage_df = damage_df[['Date','Defect Category','Defect ref', 'year', 'month']]
-    damage_df = pd.DataFrame(damage_df)
+    # reduced filtered df to only relevant columns    
+    damage_df = damage_df[['Date', 'Defect Category','Defect ref']]
+
+    damage_df['year'] = damage_df['Date'].dt.year
+    damage_df['month'] = damage_df['Date'].dt.month
+    damage_df['day'] = damage_df['Date'].dt.day
+
+    damage_df = damage_df[['year', 'month', 'Defect Category','Defect ref']]
+
+    # Create year and month columnto use as indicies later
     print("DATA FRAME w/ reduced columns\n")
     print(damage_df)
 
     # group by month-year
-    damage_df = damage_df['Defect Category'].groupby([df['Date'].dt.year, df['Date'].dt.month]).agg('count')
+    damage_df = damage_df['Defect Category'].groupby([damage_df['year'], damage_df['month']]).agg('count')
     print("DATA FRAME post grouping\n")
     print(damage_df)
+    print("\nTHIS IS THE END OF read_data.py\n")
 
-    damage_df.to_csv("C:\Python Projects\\time series\output-data\\factory-data-monthlydamage.csv")
+    return damage_df
